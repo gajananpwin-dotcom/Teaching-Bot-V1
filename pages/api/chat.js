@@ -1,9 +1,11 @@
 import OpenAI from "openai";
 import { containsBadLanguage, isOnSubject, languageHeader } from "../../lib/guard";
+
 const client = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
+
   const { message, subject, keywords = [], language = "en" } = req.body || {};
   if (!message || !subject) return res.status(400).json({ error: "Provide message and subject" });
 
@@ -30,7 +32,10 @@ export default async function handler(req, res) {
     const resp = await client.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.3,
-      messages: [{ role: "system", content: sys }, { role: "user", content: user }]
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: user }
+      ]
     });
     const reply = resp.choices?.[0]?.message?.content?.trim() || "I’m here to help with the subject you uploaded.";
     return res.json({ reply });
